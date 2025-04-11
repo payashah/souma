@@ -2,7 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import DropdownMenu from "../DropDown/DropdownMenu";
 import LoginButton from "../Buttons/LoginButton";
-import { DropdownItems } from "../DropDown/DropDownItems";
+import { useSelector } from "react-redux";
+import { RootState } from "../../Redux/Store";
 
 
 const HeaderWrapper = styled.header`
@@ -36,6 +37,9 @@ const Nav = styled.nav`
 
 const Header: React.FC = () => {
 
+  const dropdownItems = useSelector((state: RootState) => state.dropdown.dropdownItems);
+
+
   return (
     <HeaderWrapper>
       <LogoWrapper>
@@ -43,7 +47,7 @@ const Header: React.FC = () => {
       </LogoWrapper>
 
       <Nav>
-        {DropdownItems.map((dropdown, index) => (
+        {dropdownItems.map((dropdown, index) => (
           <DropdownMenu
             key={index}
             label={dropdown.label}

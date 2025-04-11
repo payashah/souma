@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useDispatch, useSelector } from "react-redux";
+import { setActiveDropdown } from "./DropDownSlice";
+import { RootState } from "../../Redux/Store";
+
 
 interface Props {
   label: string;
@@ -71,20 +75,33 @@ const Item = styled.div`
 // `;
 
 const DropdownMenu: React.FC<Props> = ({ label, items }) => {
-  const [open, setOpen] = useState(false);
+
+  const activeDropdown = useSelector((state: RootState) => state.dropdown.activeDropdown)
+  const dispatch = useDispatch()
+  const isOpen = activeDropdown === label
+
+
+  // const [open, setOpen] = useState(false);
+
+  const handleMouseEnter = () => {
+    dispatch(setActiveDropdown(label));
+  };
+
+  const handleMouseLeave = () => {
+    dispatch(setActiveDropdown(null));
+  };
 
   return (
     <Wrapper
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}     >
       {/* <HoverZone> */}
       <LabelWrapper>
         <span>{label}</span>
-        <Arrow open={open}></Arrow>
+        <Arrow open={isOpen}></Arrow>
       </LabelWrapper>
 
-      {open && (
+      {isOpen && (
         <Dropdown>
           {items.map((item, index) => (
             <Item key={index}>{item}</Item>

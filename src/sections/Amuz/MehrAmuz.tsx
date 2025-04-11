@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 import ContentCard from "../../components/ContentCard/ContentCard";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import styled from 'styled-components';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../Redux/Store';
+import { fetchMehrAmuz } from './MehrAmuzSlice';
+
 
 // ==================== Styled Components ====================
 const PageContainer = styled.div`
@@ -15,7 +18,7 @@ const PageContainer = styled.div`
 `;
 
 const SliderWrapper = styled.div`
-  width: 60%;
+  width: 70%;
   max-width: 1200px;
   margin: 0 auto;
 `;
@@ -65,128 +68,70 @@ const ErrorState = styled.div`
   color: #dc3545;
 `;
 
-// ==================== Interfaces ====================
-interface ApiResponse {
-    isSuccess: boolean;
-    message: string;
-    count: number;
-    errorCode: number;
-    errors: any[];
-    data: ContentItem[];
-}
-
-interface ContentItem {
-    id?: string;
-    fileContent?: string;
-    title?: string;
-    brief?: string;
-    date?: string;
-    views?: number;
-    isPdf?: boolean;
-    category?: string;
-}
-
-interface FormattedContent {
-    id: string;
-    fileContent?: string;
-    title: string;
-    brief: string;
-    date?: string;
-    views?: number;
-    isPdf?: boolean;
-    category?: string;
-}
 
 // ==================== Main Component ====================
 export default function MehrAmuz() {
-    const [cardsData, setCardsData] = useState<ContentItem[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+  const { data, loading, error } = useSelector((state: RootState) => state.mehrAmuz);
 
-    // Slider settings
-    const sliderSettings = {
-        dots: true,
-        infinite: true,
-        speed: 500,
-        slidesToShow: 3,
-        slidesToScroll: 1,
-        arrows: true,
-        rtl: true,
-        responsive: [
-            {
-                breakpoint: 1024,
-                settings: {
-                    slidesToShow: 2,
-                    arrows: false
-                }
-            },
-            {
-                breakpoint: 768,
-                settings: {
-                    slidesToShow: 1,
-                    arrows: false
-                }
-            }
-        ]
-    };
+  const dispatch = useDispatch()
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.post<ApiResponse>(
-                    'https://mehrapi.souma-p.ir/api/v1/Content/get-contents',
-                    {},
-                    { headers: { 'Content-Type': 'application/json' } }
-                );
+  // Slider settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    arrows: true,
+    rtl: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          arrows: false
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          arrows: false
+        }
+      }
+    ]
+  };
 
-                const formattedData: FormattedContent[] = response.data.data.map(item => ({
-                    id: item.id || '',
-                    title: item.title || 'بدون عنوان',
-                    brief: item.brief || 'بدون توضیحات',
-                    fileContent: item.fileContent || 'image',
-                    date: item.date || 'تاریخ نامعلوم',
-                    views: item.views || 0,
-                    isPdf: item.isPdf || false,
-                    category: item.category || 'دسته‌بندی نشده'
-                }));
+  useEffect(() => {
+    dispatch(fetchMehrAmuz() as any);
+  }, [dispatch]);
 
-                setCardsData(formattedData);
-                setLoading(false);
-            } catch (err: any) {
-                setError(err.message || 'خطا در دریافت داده‌ها');
-                setLoading(false);
-            }
-        };
+  if (loading) return <LoadingState>در حال بارگذاری محتوا...</LoadingState>;
+  if (error) return <ErrorState>{error}</ErrorState>;
 
-        fetchData();
-    }, []);
+  return (
+    <PageContainer>
+      <SliderWrapper>
+        <HeaderSection>
+          <Title>مهر آموز</Title>
+          <ViewAllLink href="#">مشاهده همه</ViewAllLink>
+        </HeaderSection>
 
-    if (loading) return <LoadingState>در حال بارگذاری محتوا...</LoadingState>;
-    if (error) return <ErrorState>{error}</ErrorState>;
-
-    return (
-        <PageContainer>
-            <SliderWrapper>
-                <HeaderSection>
-                    <Title>مهر تحلیل</Title>
-                    <ViewAllLink href="#">مشاهده همه</ViewAllLink>
-                </HeaderSection>
-
-                <Slider {...sliderSettings}>
-                    {cardsData.map((card) => (
-                        <ContentCard
-                            key={card.id}
-                            title={card.title}
-                            desc={card.brief}
-                            image={card.fileContent}
-                            date={card.date}
-                            views={card.views}
-                            isPdf={card.isPdf}
-                            category={card.category}
-                        />
-                    ))}
-                </Slider>
-            </SliderWrapper>
-        </PageContainer>
-    );
+        <Slider {...sliderSettings}>
+          {data.map((card) => (
+            <ContentCard
+              key={card.id}
+              title={card.title}
+              desc={card.brief}
+              image={card.fileContent}
+              date={card.date}
+              views={card.views}
+              isPdf={card.isPdf}
+              category={card.category}
+            />
+          ))}
+        </Slider>
+      </SliderWrapper>
+    </PageContainer>
+  );
 }

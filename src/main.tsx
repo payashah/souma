@@ -2,16 +2,18 @@ import React from "react";
 import ReactDOM from 'react-dom/client';
 import App from "./App.tsx";
 import "./styles/Reset.css"
+import { Provider } from "react-redux";
+import { store } from "./Redux/Store.ts";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+  // <React.StrictMode>
+  //   <App />
+  // </React.StrictMode>
 
 
-  // <Provider>
-  //   <React.StrictMode>
-  //     <App />
-  //   </React.StrictMode>
-  // </Provider>
+  <Provider store={store}>
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  </Provider>
 );
